@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DecuGuard · Decubitus & Egress Surveillance</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="bg"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i></div>
+<header>
+  <div class="brand">
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>
+    </div>
+    <div>
+      <h1>Non-Invasive Decubitus Prophylaxis &amp; Spatial Egress-Hazard Surveillance System</h1>
+      <div class="sub">Live FSR pressure zones · ultrasonic &amp; PIR egress sensing · acoustic alerts</div>
+    </div>
+  </div>
+  <div class="right">
+    <span class="chip"><span class="dot" id="cdot"></span><span id="ctext">Not connected</span></span>
+    <span class="chip" id="devchip">Device · —</span>
+    <button id="btnSettings" class="primary"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>Cloud settings</button>
+  </div>
+</header>
+
+<nav id="tabs">
+  <button data-t="overview" class="on"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>Overview</button>
+  <button data-t="pressure"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>Pressure profile</button>
+  <button data-t="egress"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>Egress &amp; hazards</button>
+  <button data-t="acoustic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>Acoustic</button>
+  <button data-t="alerts"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Alerts <span class="pill bad" id="alertCount" style="margin-left:4px">0</span></button>
+</nav>
+
+<main>
+<!-- OVERVIEW -->
+<section id="t-overview" class="tab">
+<div class="card hero"><div class="heroText"><div class="note">Live bed view</div>
+<h3 id="heroTitle">Waiting for the bed…</h3><p class="note" id="heroSub">Data appears here as soon as the ESP-12E reports.</p>
+<div class="row" id="heroChips" style="margin-top:12px"></div>
+<div class="legend"><span><i style="background:#bfeee3"></i>Offloaded</span><span><i style="background:#fbe9a8"></i>Elevated</span><span><i style="background:#f6a7b2"></i>Tissue-damage zone</span></div></div>
+<svg id="bed3d" viewBox="60 8 440 296" role="img" aria-label="Isometric bed showing live pressure zones"><defs><linearGradient id="fT" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e4ecff"/></linearGradient><linearGradient id="fL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9e0fa"/><stop offset="1" stop-color="#b7c3ee"/></linearGradient><linearGradient id="fR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9d4f5"/><stop offset="1" stop-color="#9eaee6"/></linearGradient><linearGradient id="hb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9bdfb"/><stop offset="1" stop-color="#8f8cf2"/></linearGradient><radialGradient id="shade" cx=".34" cy=".28" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".28" stop-color="#fff" stop-opacity=".25"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#28306e" stop-opacity=".28"/></radialGradient><filter id="bl"><feGaussianBlur stdDeviation="9"/></filter></defs><ellipse cx="285" cy="268" rx="215" ry="30" fill="#5a64b4" opacity=".22" filter="url(#bl)"/><rect x="86" y="192" width="9" height="26" rx="4" fill="#9aa6dd"/><rect x="206" y="248" width="9" height="26" rx="4" fill="#9aa6dd"/><rect x="466" y="138" width="9" height="26" rx="4" fill="#9aa6dd"/><rect x="346" y="82" width="9" height="26" rx="4" fill="#9aa6dd"/><polygon points="350,60 470,116 470,76 350,20" fill="url(#hb)" stroke="#8f8cf2" stroke-width="6" stroke-linejoin="round"/><polygon points="90,170 210,226 210,250 90,194" fill="url(#fL)" stroke="#c3cff0" stroke-width="2" stroke-linejoin="round"/><polygon points="210,226 470,116 470,140 210,250" fill="url(#fR)" stroke="#b3c0ee" stroke-width="2" stroke-linejoin="round"/><polygon points="90,170 350,60 470,116 210,226" fill="url(#fT)" stroke="#d3dcf7" stroke-width="2" stroke-linejoin="round"/><polygon points="330,79 364,65 446,103 412,118" fill="#fff" stroke="#f1eeff" stroke-width="9" stroke-linejoin="round"/><ellipse cx="311" cy="108" rx="19" ry="8" fill="#4a5496" opacity=".18"/><circle id="zb0" cx="311" cy="94" r="14" fill="#cfd6f2"/><circle id="zh0" cx="311" cy="94" r="14" fill="url(#shade)"/><ellipse cx="364" cy="133" rx="19" ry="8" fill="#4a5496" opacity=".18"/><circle id="zb1" cx="364" cy="119" r="14" fill="#cfd6f2"/><circle id="zh1" cx="364" cy="119" r="14" fill="url(#shade)"/><ellipse cx="275" cy="147" rx="19" ry="8" fill="#4a5496" opacity=".18"/><circle id="zb2" cx="275" cy="133" r="14" fill="#cfd6f2"/><circle id="zh2" cx="275" cy="133" r="14" fill="url(#shade)"/><ellipse cx="168" cy="171" rx="19" ry="8" fill="#4a5496" opacity=".18"/><circle id="zb3" cx="168" cy="157" r="14" fill="#cfd6f2"/><circle id="zh3" cx="168" cy="157" r="14" fill="url(#shade)"/><ellipse cx="216" cy="194" rx="19" ry="8" fill="#4a5496" opacity=".18"/><circle id="zb4" cx="216" cy="180" r="14" fill="#cfd6f2"/><circle id="zh4" cx="216" cy="180" r="14" fill="url(#shade)"/><circle id="sL" cx="220" cy="111" r="8" fill="#3fb8a8" stroke="#fff" stroke-width="3"/><circle cx="218" cy="108" r="3" fill="#fff" opacity=".8"/><circle id="sR" cx="340" cy="179" r="8" fill="#3fb8a8" stroke="#fff" stroke-width="3"/><circle cx="338" cy="176" r="3" fill="#fff" opacity=".8"/></svg></div>
+
+  <div class="grid g4" style="margin-bottom:18px">
+    <div class="card kpi"><span class="kic k1"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></svg></span><h2>Patient status</h2><div class="v" id="kStatus">—</div><div class="n" id="kStatusN">Waiting for data</div></div>
+    <div class="card kpi"><span class="kic k2"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg></span><h2>Peak zone pressure (est.)</h2><div class="v"><span id="kPeak">—</span><span class="u">mmHg</span></div><div class="n" id="kPeakN">Capillary closing ≈ 32 mmHg</div></div>
+    <div class="card kpi"><span class="kic k3"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><h2>Next repositioning</h2><div class="v" id="kTurn">—</div><div class="n" id="kTurnN">Turn interval 2 h</div></div>
+    <div class="card kpi"><span class="kic k4"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" x2="12.01" y1="20" y2="20"/></svg></span><h2>ESP-12E Wi-Fi signal</h2><div class="v"><span id="kRssi">—</span><span class="u">dBm</span></div><div class="n" id="kUp">Uptime —</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h2>Pressure map <span class="pill ok" id="riskPill">Low risk</span></h2><div id="heatOverview"></div>
+      <div class="legend"><span><i style="background:#bfeee3"></i>Offloaded</span><span><i style="background:#fbe9a8"></i>Elevated</span><span><i style="background:#f6a7b2"></i>Tissue-damage zone</span></div></div>
+    <div class="card"><h2>Live trends <span class="seg"><span class="pill warn" id="sampleTag" style="display:none">Sample data</span><button data-range="10">10 min</button><button data-range="60" class="on">1 h</button><button data-range="120">2 h</button><button id="btnSample"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>Sample data</button></span></h2><canvas id="cTrend" height="190"></canvas>
+      <div class="legend"><span><i style="background:#8f8cf2"></i>Peak pressure</span><span><i style="background:#f08fa0"></i>Edge proximity</span></div>
+      <div class="row" style="margin-top:14px"><button id="btnTurn" class="primary"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>Log repositioning</button>
+      </div></div>
+  </div>
+</section>
+
+<!-- PRESSURE -->
+<section id="t-pressure" class="tab hide">
+  <div class="grid g2">
+    <div class="card"><h2>Interface pressure map</h2><div id="heatPressure"></div></div>
+    <div class="grid">
+      <div class="card"><h2>Repositioning clock</h2>
+        <div class="bigtimer" id="turnBig">—</div><div class="progress"><div id="turnBar" style="width:0"></div></div>
+        <div class="note" id="turnNote">Time since last turn.</div></div>
+      <div class="card"><h2>Zone pressure history</h2><canvas id="cZones" height="170"></canvas><div class="legend"><span><i style="background:#8f8cf2"></i>Left shoulder</span><span><i style="background:#6fb1f2"></i>Right shoulder</span><span><i style="background:#f08fa0"></i>Sacrum</span><span><i style="background:#3fb8a8"></i>Left heel</span><span><i style="background:#f2b95c"></i>Right heel</span></div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:18px"><h2>Cumulative tissue-load risk by region</h2><div id="riskBars"></div></div>
+</section>
+
+<!-- EGRESS -->
+<section id="t-egress" class="tab hide">
+  <div class="grid g2">
+    <div class="card"><h2>Room surveillance <span class="pill ok" id="egPill">Safe</span></h2>
+      <svg id="room" viewBox="0 0 600 360" width="100%">
+        <rect x="6" y="6" width="588" height="348" rx="22" fill="#fbfcff" stroke="#dfe4f6" stroke-width="2"/>
+        <rect x="470" y="6" width="124" height="130" rx="18" fill="#e6f6f2" stroke="#cdeee5"/><text x="532" y="76" text-anchor="middle" fill="#5c9d92" font-size="13">Bathroom</text>
+        <rect x="6" y="150" width="14" height="70" rx="6" fill="#d9defa"/><text x="30" y="190" fill="#8b92c4" font-size="11" transform="rotate(0)">Door</text>
+        <rect x="140" y="60" width="150" height="250" rx="20" fill="#fff" stroke="#cfd5f3" stroke-width="2"/>
+        <rect id="edgeL" x="140" y="60" width="26" height="250" rx="12" fill="#f6a7b2" opacity="0"/>
+        <rect id="edgeR" x="264" y="60" width="26" height="250" rx="12" fill="#f6a7b2" opacity="0"/>
+        <text x="215" y="82" text-anchor="middle" font-size="11" fill="#9aa1c9">Bed · pressure array</text>
+        <circle id="zoneRing" cx="215" cy="185" r="0" fill="none" stroke="#f08fa0" stroke-dasharray="4 4"/>
+        <circle id="pt" cx="215" cy="185" r="15" fill="#8f8cf2" stroke="#fff" stroke-width="3"/>
+        <text id="ptLabel" x="215" y="340" text-anchor="middle" font-size="12" fill="#7a82a0"></text>
+      </svg></div>
+    <div class="grid">
+      <div class="card"><h2>Egress indicators</h2>
+        <div id="egMetrics" class="grid" style="gap:10px"></div></div>
+      <div class="card"><h2>Edge-proximity history</h2><canvas id="cEdge" height="140"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ACOUSTIC -->
+<section id="t-acoustic" class="tab hide">
+  <div class="grid g2">
+    <div class="card"><h2>Bedside speaker &amp; alarm</h2>
+      <div class="note">Commands travel through Firebase to the ESP-12E, which drives the DFPlayer Mini speaker and the buzzer.</div>
+      <div class="row" style="margin-top:14px"><button class="primary" data-cmd="voice_turn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>Play “please reposition”</button><button data-cmd="voice_stay"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 4v6"/><path d="M2 18h20"/></svg>Play “stay in bed”</button><button data-cmd="buzzer"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M4 2C2.8 3.7 2 5.7 2 8"/><path d="M22 8c0-2.3-.8-4.3-2-6"/></svg>Sound buzzer</button><button data-cmd="silence"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>Silence</button></div>
+      <label>Speaker volume</label><input type="range" id="vol" min="0" max="30" value="20"></div>
+    <div class="card"><h2>Command history</h2><div class="log" id="acLog"></div></div>
+  </div>
+</section>
+
+<!-- ALERTS -->
+<section id="t-alerts" class="tab hide">
+  <div class="card"><h2>Alert centre <button id="btnClear"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Clear all</button></h2><div class="log" id="alertLog" style="max-height:560px"></div></div>
+</section>
+</main>
+
+<dialog id="dlg">
+  <h3 style="margin:0 0 4px">Cloud connection</h3>
+  <div class="note">Connect to your Firebase Realtime Database. Paste the web-app config from <b>Firebase console → Project settings → Your apps</b>. The dashboard shows live data only, so the ESP-12E must use the same Device ID.</div>
+  <label>Firebase config (JSON or JS object)</label>
+  <textarea id="cfg" placeholder='{
+  "apiKey": "...",
+  "authDomain": "your-app.firebaseapp.com",
+  "databaseURL": "https://your-app-default-rtdb.firebaseio.com",
+  "projectId": "your-app",
+  "appId": "..."
+}'></textarea>
+  <div class="row" style="align-items:flex-end"><div style="flex:1"><label>Turn interval (min)</label><input id="tTurn" type="number" min="10" max="480"></div><div style="flex:1"><label>Edge alert (cm)</label><input id="tEdge" type="number" min="5" max="100"></div><div style="flex:1"><label>FSR full-scale (mmHg)</label><input id="tFs" type="number" min="20" max="200"></div></div>
+  <label>Device ID (path: /devices/&lt;id&gt;)</label>
+  <input id="devId" value="bed-01">
+  <label>Authentication</label>
+  <select id="authMode"><option value="anon">Anonymous sign-in</option><option value="none">None (open rules)</option></select>
+  <div class="row" style="margin-top:18px;justify-content:flex-end">
+    <button id="btnDisconnect"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" x2="12" y1="2" y2="12"/></svg>Disconnect</button>
+    <button id="btnCancel"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>Cancel</button>
+    <button id="btnConnect" class="primary"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>Connect</button>
+  </div>
+  <div class="note" id="cfgMsg" style="margin-top:10px"></div>
+</dialog>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

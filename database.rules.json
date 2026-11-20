@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "devices": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}
