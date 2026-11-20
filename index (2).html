@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DecuGuard · Decubitus & Egress Surveillance</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#2c3350; --muted:#7a82a0; --line:#e6e9f5; --card:rgba(255,255,255,.78);
+  --teal:#3fb8a8; --lav:#8f8cf2; --rose:#f08fa0; --amber:#f2b95c; --mint:#bfeee3;
+  --ok:#3fb8a8; --warn:#f2b95c; --bad:#ef7f8e;
+  --shadow:0 10px 30px rgba(120,130,190,.14);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Inter",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);
+  background:
+   radial-gradient(900px 500px at 8% -10%, #dff3ff 0, transparent 60%),
+   radial-gradient(800px 500px at 100% 0%, #fde4ef 0, transparent 55%),
+   radial-gradient(900px 600px at 50% 110%, #e2f8ee 0, transparent 60%),
+   #f7f9ff;
+  min-height:100vh}
+header{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;padding:22px 28px 8px}
+.brand{display:flex;gap:14px;align-items:center}
+.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--teal),var(--lav));display:grid;place-items:center;color:#fff;box-shadow:var(--shadow)}
+h1{font-size:17px;margin:0;line-height:1.25;max-width:760px}
+.sub{font-size:12px;color:var(--muted);margin-top:2px}
+.right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:12.5px;box-shadow:var(--shadow)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--amber)}
+.dot.live{background:var(--ok);box-shadow:0 0 0 4px rgba(63,184,168,.2)}
+.dot.err{background:var(--bad)}
+button{font:inherit;font-size:13px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 14px;border-radius:12px;cursor:pointer;transition:.15s}
+button:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+button.primary{background:linear-gradient(135deg,var(--teal),var(--lav));color:#fff;border:0}
+nav{display:flex;gap:6px;padding:10px 28px;flex-wrap:wrap}
+nav button{border-radius:999px;background:transparent;border:1px solid transparent;color:var(--muted)}
+nav button.on{background:#fff;border-color:var(--line);color:var(--ink);box-shadow:var(--shadow)}
+main{padding:6px 28px 40px;max-width:1280px;margin:0 auto}
+.grid{display:grid;gap:18px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g2{grid-template-columns:1.2fr 1fr}
+@media(max-width:980px){.g4{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
+@media(max-width:520px){.g4{grid-template-columns:1fr}header,nav,main{padding-left:16px;padding-right:16px}}
+.card{background:var(--card);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.9);border-radius:22px;padding:18px;box-shadow:var(--shadow)}
+.card h2{font-size:13.5px;margin:0 0 12px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+.kpi .v{font-size:30px;font-weight:700;letter-spacing:-.02em}
+.kpi .u{font-size:13px;color:var(--muted);font-weight:500;margin-left:3px}
+.kpi .n{font-size:12px;color:var(--muted);margin-top:4px}
+.pill{font-size:11.5px;padding:3px 9px;border-radius:999px;font-weight:600}
+.pill.ok{background:#dcf5f0;color:#23897c}.pill.warn{background:#fdf0d4;color:#a8741a}.pill.bad{background:#fde0e5;color:#c0475b}
+.heat{display:grid;grid-template-columns:90px repeat(4,1fr);gap:6px;align-items:center}
+.heat .lab{font-size:11.5px;color:var(--muted)}
+.cell{height:36px;border-radius:10px;display:grid;place-items:center;font-size:11.5px;font-weight:600;color:#3a4160;transition:background .6s}
+.colhead{font-size:11px;color:var(--muted);text-align:center}
+canvas{width:100%;display:block}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.log{max-height:300px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.ev{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:14px;background:#fff;border:1px solid var(--line);font-size:13px}
+.ev .t{color:var(--muted);font-size:11.5px;margin-top:2px}
+.ev .bar{width:4px;align-self:stretch;border-radius:4px}
+.ev.bad .bar{background:var(--bad)}.ev.warn .bar{background:var(--amber)}.ev.ok .bar{background:var(--teal)}
+.ev button{margin-left:auto;padding:4px 10px;font-size:12px}
+.empty{color:var(--muted);font-size:13px;padding:8px}
+.bigtimer{font-size:38px;font-weight:700;letter-spacing:-.02em}
+.progress{height:10px;background:#edf0fa;border-radius:999px;overflow:hidden;margin:10px 0}
+.progress>div{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--lav));transition:width .6s}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+dialog{border:0;border-radius:24px;padding:24px;max-width:560px;width:92%;box-shadow:0 30px 80px rgba(70,80,140,.3);color:var(--ink)}
+dialog::backdrop{background:rgba(120,130,190,.25);backdrop-filter:blur(4px)}
+label{font-size:12px;color:var(--muted);display:block;margin:12px 0 5px}
+input,textarea,select{width:100%;font:inherit;font-size:13px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fbfcff;color:var(--ink)}
+textarea{min-height:150px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.hide{display:none}
+.note{font-size:12px;color:var(--muted);line-height:1.5}
+svg text{font-family:inherit}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+/* ===== 3D / aesthetic theme ===== */
+body{font-family:"Plus Jakarta Sans","Inter",system-ui,sans-serif;
+ background:radial-gradient(900px 520px at 6% -8%,#d3eaff,transparent 60%),radial-gradient(800px 520px at 100% 0,#ffd9e8,transparent 55%),radial-gradient(900px 600px at 50% 112%,#d0f5e5,transparent 60%),linear-gradient(160deg,#f1f6ff,#f8f1ff 55%,#f0fbf6);background-attachment:fixed}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg i{position:absolute;border-radius:50%;opacity:.92;animation:float 14s ease-in-out infinite;
+ background:radial-gradient(circle at 32% 28%,#fff 0,rgba(255,255,255,0) 34%),radial-gradient(circle at 50% 50%,var(--a),var(--b));
+ box-shadow:inset -14px -18px 30px rgba(80,90,170,.18),0 40px 60px -20px rgba(110,120,200,.35)}
+.bg .s1{--a:#c4ebff;--b:#86c6f5;width:190px;height:190px;left:-50px;top:18%}
+.bg .s2{--a:#ffd6e4;--b:#f5a0bb;width:130px;height:130px;right:6%;top:9%;animation-delay:-4s}
+.bg .s3{--a:#ddd7ff;--b:#a59ef5;width:240px;height:240px;right:-70px;bottom:6%;animation-delay:-8s}
+.bg .s4{--a:#ccf4e3;--b:#86dbbd;width:110px;height:110px;left:9%;bottom:7%;animation-delay:-2s}
+@keyframes float{50%{transform:translateY(-22px)}}
+header,nav,main{position:relative;z-index:1}
+.logo{box-shadow:0 5px 0 #6d67c4,0 14px 22px -6px #6d67c4,inset 0 2px 0 rgba(255,255,255,.5)}
+h1{font-weight:700}
+.card{background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.95);border-radius:26px;box-shadow:inset 0 1px 0 #fff,0 22px 44px -18px rgba(105,115,200,.38)}
+.chip{box-shadow:0 3px 0 #dfe5fb,0 10px 18px -8px rgba(110,120,200,.35)}
+/* glossy 3D orbs on KPI cards */
+.kpi{position:relative}.kpi h2{padding-right:56px}
+.kpi::after{content:"";position:absolute;right:16px;top:14px;width:46px;height:46px;border-radius:50%;
+ background:radial-gradient(circle at 32% 26%,#fff 0,rgba(255,255,255,0) 36%),radial-gradient(circle at 50% 50%,var(--a),var(--b));
+ box-shadow:inset -6px -9px 14px rgba(40,50,120,.16),0 12px 18px -6px var(--b)}
+.g4>.kpi:nth-child(1)::after{--a:#c8f4e3;--b:#4fcaa5}.g4>.kpi:nth-child(2)::after{--a:#ddd8ff;--b:#8f8cf2}
+.g4>.kpi:nth-child(3)::after{--a:#ffe8b5;--b:#f5ae55}.g4>.kpi:nth-child(4)::after{--a:#c9e8ff;--b:#5fb0f0}
+/* hero with 3D bed */
+.hero{display:flex;flex-wrap:wrap;align-items:center;gap:6px 32px;margin-bottom:18px;overflow:hidden;background:linear-gradient(120deg,rgba(255,255,255,.88),rgba(233,238,255,.66))}
+.hero svg{flex:1 1 380px;max-width:580px;height:auto;margin:0 auto}
+.heroText{flex:1 1 260px}.heroText h3{font-size:36px;margin:2px 0 2px;letter-spacing:-.02em;line-height:1.1}
+.chipx{display:inline-flex;flex-direction:column;gap:3px;padding:8px 12px;border-radius:16px;background:#fff;box-shadow:0 3px 0 #e2e7fb,0 10px 16px -10px rgba(110,120,200,.4)}
+.chipx small{font-size:11px;color:var(--muted)}
+/* 3D buttons */
+button{font-weight:600;background:linear-gradient(180deg,#fff,#eef2ff);border:1px solid #dde4fb;box-shadow:0 3px 0 #d3daf5,0 10px 16px -8px rgba(110,120,200,.4)}
+button:hover:not(:disabled){transform:translateY(-1px)}
+button:active:not(:disabled){transform:translateY(3px)}
+nav button{box-shadow:none;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.9);color:#5d6590}
+nav button.on{color:#fff;border:0;background-image:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 55%),linear-gradient(135deg,#8f8cf2,#3fb8a8);box-shadow:0 4px 0 #6d67c4,0 12px 18px -8px #6d67c4}
+button:is(.primary,#btnTurn,#btnConnect,[data-cmd],#btnDisconnect,#btnClear,[data-ack]){color:#fff;border:0;text-shadow:0 1px 0 rgba(0,0,0,.18);
+ background-image:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0) 55%),linear-gradient(135deg,var(--c1),var(--c2));
+ box-shadow:0 4px 0 var(--sh),0 12px 20px -8px var(--sh)}
+button:is(.primary,#btnTurn,#btnConnect,[data-cmd],#btnDisconnect,#btnClear,[data-ack]):active:not(:disabled){box-shadow:0 1px 0 var(--sh),0 4px 8px -4px var(--sh)}
+button.primary,#btnTurn,#btnConnect,[data-cmd="voice_turn"]{--c1:#38bfa5;--c2:#5f86f2;--sh:#35799f}
+[data-cmd="voice_stay"]{--c1:#9a8cf5;--c2:#c08af0;--sh:#6d5bc4}
+[data-cmd="buzzer"],#btnDisconnect{--c1:#ff97a8;--c2:#ee6c88;--sh:#b9455f}
+[data-cmd="silence"],#btnClear{--c1:#ffd77f;--c2:#f6ac55;--sh:#c0802c;color:#5a3908!important;text-shadow:none!important}
+[data-ack]{--c1:#7fe0c3;--c2:#3cb996;--sh:#2b8a70}
+button:disabled{opacity:.5;cursor:not-allowed;box-shadow:none!important}
+input[type=range]{accent-color:#8f8cf2}
+/* glossy cells and bars */
+.cell{box-shadow:inset 0 2px 0 rgba(255,255,255,.65),inset 0 -4px 8px rgba(60,70,140,.08),0 6px 10px -6px rgba(100,110,170,.4)}
+.progress{box-shadow:inset 0 2px 4px rgba(90,100,170,.15)}
+.progress>div{box-shadow:inset 0 2px 0 rgba(255,255,255,.45)}
+.ev{box-shadow:0 8px 16px -12px rgba(100,110,180,.45)}
+@media(prefers-reduced-motion:reduce){.bg i{animation:none}}
+
+/* ===== real icons ===== */
+.ic{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+button{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+nav button .pill{margin-left:2px}
+h2 button{font-size:12px;padding:6px 11px}
+.kpi::after{content:none!important}
+.kic{position:absolute;right:16px;top:14px;width:46px;height:46px;border-radius:15px;display:grid;place-items:center;color:#fff;
+ background-image:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0) 55%),linear-gradient(135deg,var(--c1),var(--c2));
+ box-shadow:0 4px 0 var(--sh),0 12px 18px -8px var(--sh)}
+.kic .ic{width:24px;height:24px;stroke-width:1.9}
+.k1{--c1:#5fd3b0;--c2:#2fb38f;--sh:#23866a}.k2{--c1:#a49cf7;--c2:#7b74e8;--sh:#5a53b8}
+.k3{--c1:#ffc66b;--c2:#f59e4a;--sh:#bd7a2a}.k4{--c1:#7cc4fa;--c2:#4a97ee;--sh:#2f6fb8}
+.logo .ic{width:24px;height:24px}
+.seg{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;text-transform:none;letter-spacing:0}
+.seg button{font-size:12px;padding:5px 10px}
+.seg button.on{color:#fff;border:0;background-image:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 55%),linear-gradient(135deg,#8f8cf2,#3fb8a8);box-shadow:0 3px 0 #6d67c4}
+</style>
+</head>
+<body>
+<div class="bg"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i></div>
+<header>
+  <div class="brand">
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>
+    </div>
+    <div>
+      <h1>Non-Invasive Decubitus Prophylaxis &amp; Spatial Egress-Hazard Surveillance System</h1>
+      <div class="sub">Live FSR pressure zones · ultrasonic &amp; PIR egress sensing · acoustic alerts</div>
+    </div>
+  </div>
+  <div class="right">
+    <span class="chip"><span class="dot" id="cdot"></span><span id="ctext">Not connected</span></span>
+    <span class="chip" id="devchip">Device · —</span>
+    <button id="btnSettings" class="primary"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>Cloud settings</button>
+  </div>
+</header>
+
+<nav id="tabs">
+  <button data-t="overview" class="on"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>Overview</button>
+  <button data-t="pressure"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>Pressure profile</button>
+  <button data-t="egress"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>Egress &amp; hazards</button>
+  <button data-t="acoustic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>Acoustic</button>
+  <button data-t="alerts"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Alerts <span class="pill bad" id="alertCount" style="margin-left:4px">0</span></button>
+</nav>
+
+<main>
+<!-- OVERVIEW -->
+<section id="t-overview" class="tab">
+<div class="card hero"><div class="heroText"><div class="note">Live bed view</div>
+<h3 id="heroTitle">Waiting for the bed…</h3><p class="note" id="heroSub">Data appears here as soon as the ESP-12E reports.</p>
+<div class="row" id="heroChips" style="margin-top:12px"></div>
+<div class="legend"><span><i style="background:#bfeee3"></i>Offloaded</span><span><i style="background:#fbe9a8"></i>Elevated</span><span><i style="background:#f6a7b2"></i>Tissue-damage zone</span></div></div>
+<svg id="bed3d" viewBox="60 8 440 296" role="img" aria-label="Isometric bed showing live pressure zones"><defs><linearGradient id="fT" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e4ecff"/></linearGradient><linearGradient id="fL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9e0fa"/><stop offset="1" stop-color="#b7c3ee"/></linearGradient><linearGradient id="fR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9d4f5"/><stop offset="1" stop-color="#9eaee6"/></linearGradient><linearGradient id="hb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c9bdfb"/><stop offset="1" stop-color="#8f8cf2"/></linearGradient><radialGradient id="shade" cx=".34" cy=".28" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".28" stop-color="#fff" stop-opacity=".25"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#28306e" stop-opacity=".28"/></radialGradient><filter id="bl"><feGaussianBlur stdDeviation="9"/></filter></defs><ellipse cx="285" cy="268" rx="215" ry="30" fill="#5a64b4" opacity=".22" filter="url(#bl)"/><rect x="86" y="192" width="9" height="26" rx="4" fill="#9aa6dd"/><rect x="206" y="248" width="9" height="26" rx="4" fill="#9aa6dd"/><rect x="466" y="138" width="9" height="26" rx="4" fill="#9aa6dd"/><rect x="346" y="82" width="9" height="26" rx="4" fill="#9aa6dd"/><polygon points="350,60 470,116 470,76 350,20" fill="url(#hb)" stroke="#8f8cf2" stroke-width="6" stroke-linejoin="round"/><polygon points="90,170 210,226 210,250 90,194" fill="url(#fL)" stroke="#c3cff0" stroke-width="2" stroke-linejoin="round"/><polygon points="210,226 470,116 470,140 210,250" fill="url(#fR)" stroke="#b3c0ee" stroke-width="2" stroke-linejoin="round"/><polygon points="90,170 350,60 470,116 210,226" fill="url(#fT)" stroke="#d3dcf7" stroke-width="2" stroke-linejoin="round"/><polygon points="330,79 364,65 446,103 412,118" fill="#fff" stroke="#f1eeff" stroke-width="9" stroke-linejoin="round"/><ellipse cx="311" cy="108" rx="19" ry="8" fill="#4a5496" opacity=".18"/><circle id="zb0" cx="311" cy="94" r="14" fill="#cfd6f2"/><circle id="zh0" cx="311" cy="94" r="14" fill="url(#shade)"/><ellipse cx="364" cy="133" rx="19" ry="8" fill="#4a5496" opacity=".18"/><circle id="zb1" cx="364" cy="119" r="14" fill="#cfd6f2"/><circle id="zh1" cx="364" cy="119" r="14" fill="url(#shade)"/><ellipse cx="275" cy="147" rx="19" ry="8" fill="#4a5496" opacity=".18"/><circle id="zb2" cx="275" cy="133" r="14" fill="#cfd6f2"/><circle id="zh2" cx="275" cy="133" r="14" fill="url(#shade)"/><ellipse cx="168" cy="171" rx="19" ry="8" fill="#4a5496" opacity=".18"/><circle id="zb3" cx="168" cy="157" r="14" fill="#cfd6f2"/><circle id="zh3" cx="168" cy="157" r="14" fill="url(#shade)"/><ellipse cx="216" cy="194" rx="19" ry="8" fill="#4a5496" opacity=".18"/><circle id="zb4" cx="216" cy="180" r="14" fill="#cfd6f2"/><circle id="zh4" cx="216" cy="180" r="14" fill="url(#shade)"/><circle id="sL" cx="220" cy="111" r="8" fill="#3fb8a8" stroke="#fff" stroke-width="3"/><circle cx="218" cy="108" r="3" fill="#fff" opacity=".8"/><circle id="sR" cx="340" cy="179" r="8" fill="#3fb8a8" stroke="#fff" stroke-width="3"/><circle cx="338" cy="176" r="3" fill="#fff" opacity=".8"/></svg></div>
+
+  <div class="grid g4" style="margin-bottom:18px">
+    <div class="card kpi"><span class="kic k1"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></svg></span><h2>Patient status</h2><div class="v" id="kStatus">—</div><div class="n" id="kStatusN">Waiting for data</div></div>
+    <div class="card kpi"><span class="kic k2"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg></span><h2>Peak zone pressure (est.)</h2><div class="v"><span id="kPeak">—</span><span class="u">mmHg</span></div><div class="n" id="kPeakN">Capillary closing ≈ 32 mmHg</div></div>
+    <div class="card kpi"><span class="kic k3"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><h2>Next repositioning</h2><div class="v" id="kTurn">—</div><div class="n" id="kTurnN">Turn interval 2 h</div></div>
+    <div class="card kpi"><span class="kic k4"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" x2="12.01" y1="20" y2="20"/></svg></span><h2>ESP-12E Wi-Fi signal</h2><div class="v"><span id="kRssi">—</span><span class="u">dBm</span></div><div class="n" id="kUp">Uptime —</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h2>Pressure map <span class="pill ok" id="riskPill">Low risk</span></h2><div id="heatOverview"></div>
+      <div class="legend"><span><i style="background:#bfeee3"></i>Offloaded</span><span><i style="background:#fbe9a8"></i>Elevated</span><span><i style="background:#f6a7b2"></i>Tissue-damage zone</span></div></div>
+    <div class="card"><h2>Live trends <span class="seg"><span class="pill warn" id="sampleTag" style="display:none">Sample data</span><button data-range="10">10 min</button><button data-range="60" class="on">1 h</button><button data-range="120">2 h</button><button id="btnSample"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>Sample data</button></span></h2><canvas id="cTrend" height="190"></canvas>
+      <div class="legend"><span><i style="background:#8f8cf2"></i>Peak pressure</span><span><i style="background:#f08fa0"></i>Edge proximity</span></div>
+      <div class="row" style="margin-top:14px"><button id="btnTurn" class="primary"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>Log repositioning</button>
+      </div></div>
+  </div>
+</section>
+
+<!-- PRESSURE -->
+<section id="t-pressure" class="tab hide">
+  <div class="grid g2">
+    <div class="card"><h2>Interface pressure map</h2><div id="heatPressure"></div></div>
+    <div class="grid">
+      <div class="card"><h2>Repositioning clock</h2>
+        <div class="bigtimer" id="turnBig">—</div><div class="progress"><div id="turnBar" style="width:0"></div></div>
+        <div class="note" id="turnNote">Time since last turn.</div></div>
+      <div class="card"><h2>Zone pressure history</h2><canvas id="cZones" height="170"></canvas><div class="legend"><span><i style="background:#8f8cf2"></i>Left shoulder</span><span><i style="background:#6fb1f2"></i>Right shoulder</span><span><i style="background:#f08fa0"></i>Sacrum</span><span><i style="background:#3fb8a8"></i>Left heel</span><span><i style="background:#f2b95c"></i>Right heel</span></div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:18px"><h2>Cumulative tissue-load risk by region</h2><div id="riskBars"></div></div>
+</section>
+
+<!-- EGRESS -->
+<section id="t-egress" class="tab hide">
+  <div class="grid g2">
+    <div class="card"><h2>Room surveillance <span class="pill ok" id="egPill">Safe</span></h2>
+      <svg id="room" viewBox="0 0 600 360" width="100%">
+        <rect x="6" y="6" width="588" height="348" rx="22" fill="#fbfcff" stroke="#dfe4f6" stroke-width="2"/>
+        <rect x="470" y="6" width="124" height="130" rx="18" fill="#e6f6f2" stroke="#cdeee5"/><text x="532" y="76" text-anchor="middle" fill="#5c9d92" font-size="13">Bathroom</text>
+        <rect x="6" y="150" width="14" height="70" rx="6" fill="#d9defa"/><text x="30" y="190" fill="#8b92c4" font-size="11" transform="rotate(0)">Door</text>
+        <rect x="140" y="60" width="150" height="250" rx="20" fill="#fff" stroke="#cfd5f3" stroke-width="2"/>
+        <rect id="edgeL" x="140" y="60" width="26" height="250" rx="12" fill="#f6a7b2" opacity="0"/>
+        <rect id="edgeR" x="264" y="60" width="26" height="250" rx="12" fill="#f6a7b2" opacity="0"/>
+        <text x="215" y="82" text-anchor="middle" font-size="11" fill="#9aa1c9">Bed · pressure array</text>
+        <circle id="zoneRing" cx="215" cy="185" r="0" fill="none" stroke="#f08fa0" stroke-dasharray="4 4"/>
+        <circle id="pt" cx="215" cy="185" r="15" fill="#8f8cf2" stroke="#fff" stroke-width="3"/>
+        <text id="ptLabel" x="215" y="340" text-anchor="middle" font-size="12" fill="#7a82a0"></text>
+      </svg></div>
+    <div class="grid">
+      <div class="card"><h2>Egress indicators</h2>
+        <div id="egMetrics" class="grid" style="gap:10px"></div></div>
+      <div class="card"><h2>Edge-proximity history</h2><canvas id="cEdge" height="140"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ACOUSTIC -->
+<section id="t-acoustic" class="tab hide">
+  <div class="grid g2">
+    <div class="card"><h2>Bedside speaker &amp; alarm</h2>
+      <div class="note">Commands travel through Firebase to the ESP-12E, which drives the DFPlayer Mini speaker and the buzzer.</div>
+      <div class="row" style="margin-top:14px"><button class="primary" data-cmd="voice_turn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>Play “please reposition”</button><button data-cmd="voice_stay"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 4v6"/><path d="M2 18h20"/></svg>Play “stay in bed”</button><button data-cmd="buzzer"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M4 2C2.8 3.7 2 5.7 2 8"/><path d="M22 8c0-2.3-.8-4.3-2-6"/></svg>Sound buzzer</button><button data-cmd="silence"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>Silence</button></div>
+      <label>Speaker volume</label><input type="range" id="vol" min="0" max="30" value="20"></div>
+    <div class="card"><h2>Command history</h2><div class="log" id="acLog"></div></div>
+  </div>
+</section>
+
+<!-- ALERTS -->
+<section id="t-alerts" class="tab hide">
+  <div class="card"><h2>Alert centre <button id="btnClear"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Clear all</button></h2><div class="log" id="alertLog" style="max-height:560px"></div></div>
+</section>
+</main>
+
+<dialog id="dlg">
+  <h3 style="margin:0 0 4px">Cloud connection</h3>
+  <div class="note">Connect to your Firebase Realtime Database. Paste the web-app config from <b>Firebase console → Project settings → Your apps</b>. The dashboard shows live data only, so the ESP-12E must use the same Device ID.</div>
+  <label>Firebase config (JSON or JS object)</label>
+  <textarea id="cfg" placeholder='{
+  "apiKey": "...",
+  "authDomain": "your-app.firebaseapp.com",
+  "databaseURL": "https://your-app-default-rtdb.firebaseio.com",
+  "projectId": "your-app",
+  "appId": "..."
+}'></textarea>
+  <div class="row" style="align-items:flex-end"><div style="flex:1"><label>Turn interval (min)</label><input id="tTurn" type="number" min="10" max="480"></div><div style="flex:1"><label>Edge alert (cm)</label><input id="tEdge" type="number" min="5" max="100"></div><div style="flex:1"><label>FSR full-scale (mmHg)</label><input id="tFs" type="number" min="20" max="200"></div></div>
+  <label>Device ID (path: /devices/&lt;id&gt;)</label>
+  <input id="devId" value="bed-01">
+  <label>Authentication</label>
+  <select id="authMode"><option value="anon">Anonymous sign-in</option><option value="none">None (open rules)</option></select>
+  <div class="row" style="margin-top:18px;justify-content:flex-end">
+    <button id="btnDisconnect"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" x2="12" y1="2" y2="12"/></svg>Disconnect</button>
+    <button id="btnCancel"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>Cancel</button>
+    <button id="btnConnect" class="primary"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>Connect</button>
+  </div>
+  <div class="note" id="cfgMsg" style="margin-top:10px"></div>
+</dialog>
+
+<script type="module">
+/* ============ CONSTANTS ============ */
+const ZN=[["Left shoulder","shL"],["Right shoulder","shR"],["Sacrum","sacrum"],["Left heel","heelL"],["Right heel","heelR"]];
+const N=5, CAP_P=32, RISK_MIN=90;      // capillary closing pressure (mmHg); minutes of sustained load = 100% risk
+const FIREBASE_CONFIG=null;   // optional: paste your firebaseConfig object here to auto-connect without the dialog
+const DEVICE_ID="bed-01";     // default device id (must match the ESP-12E sketch)
+const $=s=>document.querySelector(s);
+const T=Object.assign({turnMin:120,edgeCm:25,fsMm:80},JSON.parse(localStorage.getItem("dg_set")||"{}"));
+/* ============ STATE ============ */
+const S={mode:"offline",last:null,prevT:null,rx:0,absent:0,load:new Array(N).fill(0),turnSimMin:0,
+  series:[],sampleOn:false,alerts:[],cmds:[],cool:{},fb:null};
+try{S.alerts=JSON.parse(localStorage.getItem("dg_alerts")||"[]")}catch{}
+const resetState=()=>{S.load.fill(0);S.turnSimMin=0;S.prevT=null;S.absent=0;S.rx=0;S.last=null};
+
+/* ============ ANALYTICS ============ */
+const avg=a=>a.reduce((x,y)=>x+y,0)/(a.length||1);
+function norm(v){const g=k=>+(v.p&&v.p[k])||0;
+  return {pct:ZN.map(z=>g(z[1])),p:ZN.map(z=>g(z[1])/100*T.fsMm),l:+(v.edge&&v.edge.l)||400,r:+(v.edge&&v.edge.r)||400,pb:!!(v.pir&&v.pir.bed),pr:!!(v.pir&&v.pir.room),rssi:v.rssi,up:v.up}}
+function analyze(d){
+  const [a,b,c,e,f]=d.p, L=a+e, R=b+f, H=a+b, F=e+f;
+  const m=Math.min(d.l,d.r);
+  return {present:Math.max(...d.pct)>=8,gx:(R-L)/(R+L||1),gy:(F-H)/(F+H||1),m,edge:Math.max(0,Math.min(1,1-m/60)),peak:Math.max(...d.p)};
+}
+function status(d,a){
+  if(!a.present){
+    if(d.pr)return{k:"warn",t:"Out of bed",n:"Moving in room"};
+    if(S.absent>=60)return{k:"bad",t:"Out of bed · no motion",n:"Possible fall: check the room"};
+    return{k:"warn",t:"Out of bed",n:"Tracking room"};
+  }
+  if(a.m<T.edgeCm)return{k:"bad",t:"At bed edge",n:"Exit imminent · "+a.m+" cm"};
+  if(a.m<T.edgeCm*1.6)return{k:"warn",t:"Restless",n:"Moving toward edge"};
+  return{k:"ok",t:"Resting",n:"In bed · centred"};
+}
+
+/* ============ INGEST ============ */
+const push=(arr,v)=>{arr.push(v);if(arr.length>90)arr.shift()};
+const SPAN=2*3600000;
+function record(d,a,now){
+  if(S.sampleOn){S.series=S.series.filter(p=>!p.s);S.sampleOn=false}
+  const pt={t:now,peak:+a.peak.toFixed(1),edge:+(a.present?a.edge:0).toFixed(2),z:d.p.map(v=>+v.toFixed(1))},L=S.series[S.series.length-1];
+  if(L&&now-L.t<10000)Object.assign(L,pt,{t:L.t});else S.series.push(pt);
+  while(S.series.length&&S.series[0].t<now-SPAN)S.series.shift();
+}
+function mergeSeries(pts){
+  if(!pts.length)return;
+  S.series=S.series.filter(p=>!p.s);S.sampleOn=false;
+  const all=S.series.concat(pts).sort((a,b)=>a.t-b.t),out=[];
+  all.forEach(p=>{const L=out[out.length-1];if(!L||p.t-L.t>5000)out.push(p)});
+  S.series=out.filter(p=>p.t>Date.now()-SPAN);
+}
+function loadSample(){
+  const now=Date.now(),fs=T.fsMm,base=[22,22,34,18,18],pts=[];
+  for(let m=0;m<=120;m++){
+    const turned=m>62,since=turned?m-62:m,pct=base.map((b,i)=>{
+      let v=b*(1+.08*Math.sin(m/7+i));
+      if(i===2)v=30+Math.min(45,since*.62);
+      if(i===0||i===3)v*=(turned?.8:1.15);if(i===1||i===4)v*=(turned?1.15:.9);
+      return Math.max(0,Math.min(100,v))});
+    const z=pct.map(v=>+(v/100*fs).toFixed(1)),e=m>=95&&m<=103?.35+.5*Math.sin((m-95)/8*Math.PI):.08+.05*Math.sin(m/5);
+    pts.push({t:now-(120-m)*60000,peak:Math.max(...z),edge:+Math.max(0,e).toFixed(2),z,s:1});
+  }
+  S.series=S.series.filter(p=>!p.s&&p.t<pts[0].t).concat(pts);S.sampleOn=true;
+}
+function ingest(raw){
+  const d=norm(raw), now=Date.now(); S.rx=now;
+  const a=analyze(d), dtReal=S.prevT?Math.min(30,(now-S.prevT)/1000):1; S.prevT=now;
+  const dtMin=dtReal*1/60;
+  d.p.forEach((p,i)=>{if(a.present&&p>CAP_P)S.load[i]+=dtMin*(p/CAP_P);else S.load[i]=Math.max(0,S.load[i]-dtMin*.6)});
+  S.turnSimMin+=dtMin; S.absent=(!a.present&&!d.pr)?S.absent+dtReal:0;
+  S.last={d,a,st:status(d,a)};
+  record(d,a,now);
+  raise(d,a); render();
+}
+const riskPct=m=>Math.min(100,m/RISK_MIN*100);
+const saveAlerts=()=>{try{localStorage.setItem("dg_alerts",JSON.stringify(S.alerts))}catch{}};
+function raise(d,a){
+  const now=Date.now();
+  const fire=(key,level,title,msg,cd=60000)=>{
+    if(S.cool[key]&&now-S.cool[key]<cd)return; S.cool[key]=now;
+    const al={id:now+key,ts:now,level,title,msg,ack:false};
+    S.alerts.unshift(al);S.alerts=S.alerts.slice(0,100);saveAlerts();
+    fbWrite("alerts/"+String(al.id).replace(/\W/g,"_"),al);
+    try{if(Notification.permission==="granted")new Notification("DecuGuard · "+title,{body:msg})}catch{}
+  };
+  S.load.forEach((m,i)=>{if(riskPct(m)>=70)fire("pr"+i,"bad","Sustained pressure · "+ZN[i][0],"Tissue load at "+Math.round(riskPct(m))+"%. Offload this region.")});
+  if(S.turnSimMin>=T.turnMin)fire("turn","warn","Repositioning due","More than "+fmtT(T.turnMin)+" since last turn.",300000);
+  if(a.present&&a.m<T.edgeCm)fire("edge","warn","Bed-edge proximity","Patient is "+a.m+" cm from the bed edge. Exit likely.",45000);
+  if(!a.present)fire("exit","warn","Bed exit detected","Patient has left the bed.",60000);
+  if(S.absent>=60)fire("lost","bad","Out of bed with no motion","No bed pressure and no room motion for 60 s. Check for a fall.",60000);
+}
+
+/* ============ COLOURS & FORMAT ============ */
+function heatColor(p){
+  const t=Math.max(0,Math.min(1,p/70)),stops=[[191,238,227],[251,233,168],[246,167,178]];
+  const [i,f]=t<.5?[0,t*2]:[1,(t-.5)*2];
+  return `rgb(${stops[i].map((c,k)=>Math.round(c+(stops[i+1][k]-c)*f)).join(",")})`;
+}
+const fmtT=m=>{m=Math.max(0,m);const h=Math.floor(m/60),mm=Math.floor(m%60);return `${h}h ${String(mm).padStart(2,"0")}m`};
+const ago=ts=>{const s=Math.round((Date.now()-ts)/1000);return s<60?s+"s ago":s<3600?Math.round(s/60)+"m ago":new Date(ts).toLocaleTimeString()};
+function heatHTML(p){
+  const c=(i,sp)=>`<div class="cell" style="height:46px;${sp?"grid-column:span 2;":""}background:${heatColor(p[i])}">${p[i].toFixed(0)} mmHg</div>`;
+  return `<div class="heat" style="grid-template-columns:90px 1fr 1fr"><div></div><div class="colhead">Left</div><div class="colhead">Right</div>
+  <div class="lab">Shoulders</div>${c(0)}${c(1)}<div class="lab">Sacrum</div>${c(2,1)}<div class="lab">Heels</div>${c(3)}${c(4)}</div>`;
+}
+
+/* ============ RENDER ============ */
+function hero(d,a,st){
+  d.p.forEach((p,i)=>{const r=11+9*Math.min(1,p/70),c=heatColor(p);
+    $("#zb"+i).setAttribute("fill",c);["#zb","#zh"].forEach(q=>$(q+i).setAttribute("r",r))});
+  $("#sL").setAttribute("fill",a.present&&d.l<T.edgeCm?"#ef7f8e":"#3fb8a8");
+  $("#sR").setAttribute("fill",a.present&&d.r<T.edgeCm?"#ef7f8e":"#3fb8a8");
+  const t=$("#heroTitle");t.textContent=st.t;t.style.color=st.k==="bad"?"var(--bad)":st.k==="warn"?"#c28a2e":"var(--ok)";
+  $("#heroSub").textContent=st.n;
+  $("#heroChips").innerHTML=[["Bed",a.present?"Occupied":"Vacated",a.present?"ok":"warn"],["Peak pressure",a.peak.toFixed(0)+" mmHg",a.peak>CAP_P?"warn":"ok"],
+    ["Nearest edge",a.present?a.m+" cm":"–",a.present&&a.m<T.edgeCm?"bad":"ok"],["Room motion",d.pr?"Detected":"None",d.pr&&!a.present?"warn":"ok"]]
+    .map(([l,v,k])=>`<span class="chipx"><small>${l}</small><span class="pill ${k}">${v}</span></span>`).join("");
+}
+
+function render(){
+  const cm=S.cmds.length?S.cmds.map(c=>`<div class="ev ok"><div class="bar"></div><div><b>${c.a}${c.v!=null?" · "+c.v:""}</b><div class="t">${ago(c.ts)}</div></div></div>`).join(""):'<div class="empty">No commands sent yet.</div>';
+  $("#acLog").innerHTML=cm;
+  const open=S.alerts.filter(x=>!x.ack).length; $("#alertCount").textContent=open;
+  $("#alertLog").innerHTML=S.alerts.length?S.alerts.map(al=>`<div class="ev ${al.level}"><div class="bar"></div><div><b>${al.title}</b><div>${al.msg}</div><div class="t">${ago(al.ts)}</div></div>${al.ack?'<span class="pill ok" style="margin-left:auto">Acknowledged</span>':`<button data-ack="${al.id}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Acknowledge</button>`}</div>`).join(""):'<div class="empty">No alerts. All clear.</div>';
+  if(!S.last){const w='<div class="empty">Waiting for data from the ESP-12E…</div>';$("#heatOverview").innerHTML=w;$("#heatPressure").innerHTML=w;drawCharts();return}
+  const {d,a,st}=S.last;
+  $("#kStatus").textContent=st.t;$("#kStatusN").textContent=st.n;
+  $("#kStatus").style.color=st.k==="bad"?"var(--bad)":st.k==="warn"?"#c28a2e":"var(--ok)";
+  $("#kPeak").textContent=a.peak.toFixed(0);
+  $("#kPeakN").textContent=a.peak>CAP_P?"Above capillary closing pressure":"Below capillary closing pressure (32)";
+  const remain=T.turnMin-S.turnSimMin;
+  $("#kTurn").textContent=remain>0?fmtT(remain):"Overdue";$("#kTurn").style.color=remain>0?"":"var(--bad)";
+  $("#kTurnN").textContent="Turn interval "+fmtT(T.turnMin);
+  $("#kRssi").textContent=d.rssi??"—";
+  $("#kUp").textContent=d.up!=null?"Uptime "+fmtT(d.up/60):"Uptime —";
+  const maxRisk=riskPct(Math.max(...S.load)),rp=$("#riskPill");
+  rp.textContent=maxRisk>=70?"High risk":maxRisk>=35?"Moderate risk":"Low risk";rp.className="pill "+(maxRisk>=70?"bad":maxRisk>=35?"warn":"ok");
+  const hm=heatHTML(d.p);$("#heatOverview").innerHTML=hm;$("#heatPressure").innerHTML=hm;
+  $("#turnBig").textContent=fmtT(S.turnSimMin)+" ";
+  $("#turnBar").style.width=Math.min(100,S.turnSimMin/T.turnMin*100)+"%";
+  $("#turnBar").style.background=S.turnSimMin>=T.turnMin?"var(--bad)":"";
+  $("#turnNote").textContent=S.turnSimMin>=T.turnMin?"Repositioning overdue. Please turn the patient.":"Elapsed since last repositioning.";
+  $("#riskBars").innerHTML=ZN.map((z,i)=>{const p=riskPct(S.load[i]),col=p>=70?"var(--bad)":p>=35?"var(--amber)":"var(--teal)";
+    return `<div class="row" style="margin:7px 0"><div style="width:110px;font-size:12.5px;color:var(--muted)">${z[0]}</div><div class="progress" style="flex:1;margin:0"><div style="width:${p}%;background:${col}"></div></div><div style="width:44px;text-align:right;font-size:12px">${Math.round(p)}%</div></div>`}).join("");
+  const pill=$("#egPill");pill.textContent=st.t;pill.className="pill "+st.k;
+  let x=215,y=185;
+  if(a.present){x=215+a.gx*60;y=185+a.gy*50}else if(d.pr){x=400;y=200}
+  $("#pt").setAttribute("cx",x);$("#pt").setAttribute("cy",y);
+  $("#pt").setAttribute("fill",st.k==="bad"?"#ef7f8e":st.k==="warn"?"#f2b95c":"#8f8cf2");
+  $("#ptLabel").textContent=a.present?`On bed · nearest edge ${a.m} cm`:(d.pr?"Out of bed · motion in room":"Out of bed · no motion");
+  const eo=cmv=>a.present?Math.max(0,Math.min(1,1-cmv/(T.edgeCm*2))):0;
+  $("#edgeL").setAttribute("opacity",eo(d.l));$("#edgeR").setAttribute("opacity",eo(d.r));
+  const mk=(l,v,k)=>`<div class="row" style="justify-content:space-between"><span class="note">${l}</span><span class="pill ${k}">${v}</span></div>`;
+  const cl=v=>v>=400?"No echo":v+" cm";
+  $("#egMetrics").innerHTML=mk("Bed occupancy",a.present?"Occupied":"Vacated",a.present?"ok":"warn")+
+    mk("Left edge clearance",cl(d.l),a.present&&d.l<T.edgeCm?"bad":"ok")+mk("Right edge clearance",cl(d.r),a.present&&d.r<T.edgeCm?"bad":"ok")+
+    mk("Bedside motion (PIR 1)",d.pb?"Motion":"Still","ok")+mk("Room motion (PIR 2)",d.pr?"Motion":"Still",d.pr&&!a.present?"warn":"ok");
+  hero(d,a,st);
+  drawCharts();
+}
+
+/* ============ CHARTS ============ */
+function cv(id){const c=$(id),r=devicePixelRatio||1,w=c.clientWidth,h=+c.getAttribute("height");c.width=w*r;c.height=h*r;const g=c.getContext("2d");g.scale(r,r);g.clearRect(0,0,w,h);return {g,w,h}}
+let RANGE=60;
+function tline(id,defs,min,max){
+  const {g,w,h}=cv(id);if(!w)return;
+  const t1=Date.now(),t0=t1-RANGE*60000,X=t=>30+(w-34)*(t-t0)/(t1-t0),Y=v=>8+(h-24)*(1-(v-min)/(max-min));
+  g.strokeStyle="#e9ecf8";g.lineWidth=1;g.font="10px sans-serif";g.fillStyle="#9aa1c9";
+  for(let i=0;i<=4;i++){const y=8+(h-24)*i/4;g.beginPath();g.moveTo(30,y);g.lineTo(w,y);g.stroke();g.textAlign="left";g.fillText((max-(max-min)*i/4).toFixed(max<=1?1:0),0,y+3)}
+  for(let i=0;i<=4;i++){g.textAlign=i===0?"left":i===4?"right":"center";g.fillText(new Date(t0+(t1-t0)*i/4).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),30+(w-34)*i/4+(i===0?-4:0),h-3)}
+  g.textAlign="left";
+  const P=S.series.filter(p=>p.t>=t0-60000),gap=Math.max(150000,RANGE*2000);
+  if(P.length<2){g.fillText("No data in this range yet",44,h/2);return}
+  const segs=[];P.forEach(p=>{const sg=segs[segs.length-1];if(sg&&p.t-sg[sg.length-1].t<=gap)sg.push(p);else segs.push([p])});
+  defs.forEach(s=>segs.forEach(sg=>{
+    if(sg.length<2)return;
+    g.beginPath();g.lineWidth=2.2;g.strokeStyle=s.c;g.lineJoin="round";
+    sg.forEach((p,i)=>{const x=Math.max(30,X(p.t)),y=Y(s.f(p));i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke();
+    if(s.fill){g.lineTo(X(sg[sg.length-1].t),h-16);g.lineTo(Math.max(30,X(sg[0].t)),h-16);g.fillStyle=s.fill;g.fill()}}));
+}
+const ZC=["#8f8cf2","#6fb1f2","#f08fa0","#3fb8a8","#f2b95c"];
+function drawCharts(){
+  $("#sampleTag").style.display=S.sampleOn?"":"none";
+  tline("#cTrend",[{f:p=>p.peak/80,c:"#8f8cf2"},{f:p=>p.edge,c:"#f08fa0"}],0,1);
+  tline("#cZones",ZC.map((c,i)=>({f:p=>p.z[i],c})),0,T.fsMm);
+  tline("#cEdge",[{f:p=>p.edge,c:"#f08fa0",fill:"rgba(240,143,160,.15)"}],0,1);
+}
+
+/* ============ FIREBASE ============ */
+const setConn=(cls,txt)=>{$("#cdot").className="dot "+cls;$("#ctext").textContent=txt};
+function parseCfg(t){
+  t=t.trim();const m=t.match(/\{[\s\S]*\}/);if(!m)throw new Error("No config object found");
+  try{return JSON.parse(m[0])}catch{return JSON.parse(m[0].replace(/'/g,'"').replace(/([{,]\s*)([A-Za-z_]\w*)\s*:/g,'$1"$2":').replace(/,\s*}/g,"}"))}
+}
+async function connectFirebase(cfg,devId,auth){
+  setConn("","Connecting…");
+  const base="https://www.gstatic.com/firebasejs/10.14.1/";
+  const [{initializeApp},db,au]=await Promise.all([import(base+"firebase-app.js"),import(base+"firebase-database.js"),import(base+"firebase-auth.js")]);
+  const app=initializeApp(cfg,"dg-"+Date.now());
+  if(auth==="anon")await au.signInAnonymously(au.getAuth(app));
+  const database=db.getDatabase(app),root=`devices/${devId}`;
+  S.mode="firebase";resetState();S.fb={database,db,devId};
+  db.onValue(db.ref(database,root+"/lastTurn"),s=>{const v=s.val();if(v)S.turnSimMin=(Date.now()-v)/60000});
+  db.onValue(db.ref(database,root+"/latest"),snap=>{const v=snap.val();if(!v||!v.p)return;setConn("live","Live · ESP-12E");$("#devchip").textContent="Device · "+devId+" · "+(v.rssi??"?")+" dBm";ingest(v)},err=>setConn("err","Error: "+err.code));
+  db.onValue(db.ref(database,root+"/alerts"),s=>{const o=s.val();if(!o)return;const ids=new Set(S.alerts.map(x=>x.id));Object.values(o).forEach(x=>{if(!ids.has(x.id))S.alerts.push(x)});S.alerts.sort((p,q)=>q.ts-p.ts);S.alerts=S.alerts.slice(0,100);saveAlerts();render()});
+  fbWrite("settings",{edgeCm:T.edgeCm,turnMin:T.turnMin,fsMm:T.fsMm});
+  try{const o=(await db.get(db.ref(database,root+"/history"))).val();
+    if(o)mergeSeries(Object.values(o).filter(r=>r&&typeof r.ts==="number"&&r.p).map(r=>{const d=norm(r),a=analyze(d);return{t:r.ts,peak:+a.peak.toFixed(1),edge:+(a.present?a.edge:0).toFixed(2),z:d.p.map(v=>+v.toFixed(1))}}));
+  }catch(e){console.warn("history",e)}
+  $("#devchip").textContent="Device · "+devId;
+  setLinked(true);setConn("live","Connected · waiting for ESP-12E");
+}
+async function fbWrite(path,val){if(!S.fb)return;try{await S.fb.db.set(S.fb.db.ref(S.fb.database,`devices/${S.fb.devId}/${path}`),val)}catch(e){console.warn(e)}}
+setInterval(()=>{if(S.mode==="firebase"&&S.rx&&Date.now()-S.rx>15000)setConn("err","Device offline · last data "+ago(S.rx))},2000);
+
+/* ============ ACOUSTIC COMMANDS ============ */
+function sendCmd(a,v){
+  S.cmds.unshift({ts:Date.now(),a,v});S.cmds.length=Math.min(S.cmds.length,20);
+  fbWrite("cmd",{action:a,value:v==null?0:v,id:Math.floor(Math.random()*2e9),ts:Date.now()});
+  render();
+}
+
+const setLinked=on=>document.querySelectorAll("[data-cmd],#vol").forEach(b=>b.disabled=!on);
+
+/* ============ UI ============ */
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".tab").forEach(s=>s.classList.toggle("hide",s.id!=="t-"+b.dataset.t));render()});
+$("#btnTurn").onclick=()=>{S.turnSimMin=0;S.load=S.load.map(v=>v*.25);fbWrite("lastTurn",Date.now());render()};
+document.addEventListener("click",e=>{
+  const a=e.target.closest("[data-ack]");if(a){const x=S.alerts.find(z=>String(z.id)===a.dataset.ack);if(x){x.ack=true;saveAlerts();fbWrite("acks/"+String(x.id).replace(/\W/g,"_"),Date.now());render()}}
+  const c=e.target.closest("[data-cmd]");if(c)sendCmd(c.dataset.cmd);
+});
+$("#vol").onchange=e=>sendCmd("volume",+e.target.value);
+document.addEventListener("click",e=>{const r=e.target.closest("[data-range]");if(!r)return;
+  RANGE=+r.dataset.range;document.querySelectorAll("[data-range]").forEach(b=>b.classList.toggle("on",b===r));drawCharts()});
+$("#btnSample").onclick=()=>{loadSample();render();drawCharts()};
+const saveSeries=()=>{try{localStorage.setItem("dg_series",JSON.stringify(S.series.filter(p=>!p.s)))}catch{}};
+setInterval(saveSeries,30000);addEventListener("beforeunload",saveSeries);
+setInterval(drawCharts,10000);
+$("#btnClear").onclick=()=>{S.alerts=[];saveAlerts();render()};
+const readT=()=>{T.turnMin=+$("#tTurn").value||120;T.edgeCm=+$("#tEdge").value||25;T.fsMm=+$("#tFs").value||80;localStorage.setItem("dg_set",JSON.stringify(T))};
+$("#btnSettings").onclick=()=>{
+  const c=localStorage.getItem("dg_cfg");if(c)$("#cfg").value=c;
+  $("#devId").value=localStorage.getItem("dg_dev")||"bed-01";$("#authMode").value=localStorage.getItem("dg_auth")||"anon";
+  $("#tTurn").value=T.turnMin;$("#tEdge").value=T.edgeCm;$("#tFs").value=T.fsMm;
+  try{if(Notification.permission==="default")Notification.requestPermission()}catch{}
+  $("#dlg").showModal()};
+$("#btnCancel").onclick=()=>$("#dlg").close();
+$("#btnDisconnect").onclick=()=>{["dg_auto","dg_cfg"].forEach(k=>localStorage.removeItem(k));location.reload()};
+$("#btnConnect").onclick=async()=>{
+  const msg=$("#cfgMsg");msg.textContent="Connecting…";
+  try{
+    readT();const cfg=parseCfg($("#cfg").value);if(!cfg.databaseURL)throw new Error("databaseURL is required (Realtime Database)");
+    const dev=$("#devId").value.trim()||"bed-01",auth=$("#authMode").value;
+    await connectFirebase(cfg,dev,auth);
+    localStorage.setItem("dg_cfg",$("#cfg").value);localStorage.setItem("dg_dev",dev);localStorage.setItem("dg_auth",auth);localStorage.setItem("dg_auto","1");
+    $("#dlg").close();
+  }catch(e){msg.textContent="Could not connect: "+(e.message||e);setConn("err","Connection failed")}
+};
+window.addEventListener("resize",()=>render());
+
+/* ============ BOOT ============ */
+(async()=>{
+  try{S.series=JSON.parse(localStorage.getItem("dg_series")||"[]").filter(p=>p.t>Date.now()-SPAN)}catch{}
+  if(!S.series.length)loadSample();
+  setLinked(false);setConn("","Not connected");render();
+  let cfg=FIREBASE_CONFIG;try{if(!cfg&&localStorage.getItem("dg_cfg"))cfg=parseCfg(localStorage.getItem("dg_cfg"))}catch{}
+  if(!cfg){$("#btnSettings").click();return}
+  try{await connectFirebase(cfg,localStorage.getItem("dg_dev")||DEVICE_ID,localStorage.getItem("dg_auth")||"anon")}
+  catch(e){console.warn(e);setConn("err","Connection failed · check Cloud settings");$("#btnSettings").click()}
+})();
+</script>
+</body>
+</html>
